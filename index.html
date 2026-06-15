@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onetime</title>
+
+<link rel="icon" type="image/png" href="NatureIcon.png">
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:white;
+    color:#222;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+header{
+    text-align:center;
+    padding:20px;
+    border-bottom:2px solid #e8e8e8;
+}
+
+header img{
+    width:80px;
+    height:80px;
+    object-fit:contain;
+}
+
+h1{
+    margin-top:10px;
+    font-size:2.2rem;
+}
+
+main{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.mode{
+    display:none;
+    width:100%;
+    max-width:700px;
+    text-align:center;
+}
+
+.mode.active{
+    display:block;
+}
+
+.big-time{
+    font-size:5rem;
+    font-weight:bold;
+    margin:20px 0;
+    word-break:break-word;
+}
+
+input[type="number"],
+input[type="time"]{
+    font-size:1.5rem;
+    padding:12px;
+    margin:8px;
+    border:2px solid #cccccc;
+    border-radius:10px;
+}
+
+button{
+    font-size:1.2rem;
+    padding:12px 20px;
+    margin:6px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    background:#4caf50;
+    color:white;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+.bottom-nav{
+    display:flex;
+    border-top:2px solid #e8e8e8;
+}
+
+.nav-btn{
+    flex:1;
+    border-radius:0;
+    margin:0;
+    padding:18px;
+    background:#2e7d32;
+    font-size:1.1rem;
+}
+
+.nav-btn.active{
+    background:#1b5e20;
+}
+
+.label{
+    font-size:1.4rem;
+    margin-bottom:10px;
+}
+
+@media (max-width:700px){
+    .big-time{
+        font-size:3rem;
+    }
+
+    input[type="number"],
+    input[type="time"]{
+        width:90%;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <img src="NatureIcon.png" alt="Nature Icon">
+    <h1>Onetime</h1>
+</header>
+
+<main>
+
+    <!-- Alarm -->
+    <section id="alarmMode" class="mode active">
+        <div class="label">Alarm</div>
+
+        <input type="time" id="alarmTime">
+
+        <div>
+            <button onclick="setAlarm()">Set Alarm</button>
+            <button onclick="clearAlarm()">Clear Alarm</button>
+        </div>
+
+        <div id="alarmStatus" style="margin-top:20px;font-size:1.3rem;">
+            No alarm set
+        </div>
+    </section>
+
+    <!-- Stopwatch -->
+    <section id="stopwatchMode" class="mode">
+        <div class="label">Stopwatch</div>
+
+        <div class="big-time" id="stopwatchDisplay">
+            00:00:00
+        </div>
+
+        <div>
+            <button onclick="startStopwatch()">Start</button>
+            <button onclick="pauseStopwatch()">Pause</button>
+            <button onclick="resetStopwatch()">Reset</button>
+        </div>
+    </section>
+
+    <!-- Timer -->
+    <section id="timerMode" class="mode">
+        <div class="label">Timer</div>
+
+        <div>
+            <input type="number" id="timerMinutes" min="0" value="1" placeholder="Minutes">
+        </div>
+
+        <div class="big-time" id="timerDisplay">
+            01:00
+        </div>
+
+        <div>
+            <button onclick="startTimer()">Start</button>
+            <button onclick="pauseTimer()">Pause</button>
+            <button onclick="resetTimer()">Reset</button>
+        </div>
+    </section>
+
+</main>
+
+<nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showMode('alarmMode', this)">Alarm</button>
+    <button class="nav-btn" onclick="showMode('stopwatchMode', this)">Stopwatch</button>
+    <button class="nav-btn" onclick="showMode('timerMode', this)">Timer</button>
+</nav>
+
+<audio id="alarmSound" src="NatureAlarm.mp3" preload="auto"></audio>
+
+<script>
+/* ---------- Mode Switch ---------- */
+
+function showMode(id, btn){
+    document.querySelectorAll('.mode').forEach(m=>{
+        m.classList.remove('active');
+    });
+
+    document.getElementById(id).classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+        b.classList.remove('active');
+    });
+
+    btn.classList.add('active');
+}
+
+/* ---------- Alarm ---------- */
+
+let alarmTimeValue = null;
+let alarmTriggered = false;
+
+function setAlarm(){
+    const value = document.getElementById('alarmTime').value;
+
+    if(!value){
+        alert('Please choose a time.');
+        return;
+    }
+
+    alarmTimeValue = value;
+    alarmTriggered = false;
+
+    document.getElementById('alarmStatus').textContent =
+        'Alarm set for ' + value;
+}
+
+function clearAlarm(){
+    alarmTimeValue = null;
+    alarmTriggered = false;
+
+    document.getElementById('alarmStatus').textContent =
+        'No alarm set';
+
+    stopSound();
+}
+
+setInterval(()=>{
+    if(!alarmTimeValue || alarmTriggered) return;
+
+    const now = new Date();
+
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+
+    const current = hh + ':' + mm;
+
+    if(current === alarmTimeValue){
+        alarmTriggered = true;
+        playSound();
+        alert('Alarm Time!');
+    }
+},1000);
+
+/* ---------- Stopwatch ---------- */
+
+let stopwatchTime = 0;
+let stopwatchInterval = null;
+
+function updateStopwatchDisplay(){
+    let hours = Math.floor(stopwatchTime / 3600);
+    let minutes = Math.floor((stopwatchTime % 3600) / 60);
+    let seconds = stopwatchTime % 60;
+
+    document.getElementById('stopwatchDisplay').textContent =
+        String(hours).padStart(2,'0') + ':' +
+        String(minutes).padStart(2,'0') + ':' +
+        String(seconds).padStart(2,'0');
+}
+
+function startStopwatch(){
+    if(stopwatchInterval) return;
+
+    stopwatchInterval = setInterval(()=>{
+        stopwatchTime++;
+        updateStopwatchDisplay();
+    },1000);
+}
+
+function pauseStopwatch(){
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = null;
+}
+
+function resetStopwatch(){
+    pauseStopwatch();
+    stopwatchTime = 0;
+    updateStopwatchDisplay();
+}
+
+/* ---------- Timer ---------- */
+
+let timerSeconds = 60;
+let timerInterval = null;
+
+function updateTimerDisplay(){
+    const mins = Math.floor(timerSeconds / 60);
+    const secs = timerSeconds % 60;
+
+    document.getElementById('timerDisplay').textContent =
+        String(mins).padStart(2,'0') + ':' +
+        String(secs).padStart(2,'0');
+}
+
+function startTimer(){
+
+    if(timerInterval) return;
+
+    if(timerSeconds <= 0){
+        const minsInput =
+            parseInt(document.getElementById('timerMinutes').value) || 1;
+
+        timerSeconds = minsInput * 60;
+        updateTimerDisplay();
+    }
+
+    timerInterval = setInterval(()=>{
+
+        timerSeconds--;
+
+        updateTimerDisplay();
+
+        if(timerSeconds <= 0){
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 0;
+            updateTimerDisplay();
+
+            playSound();
+            alert('Timer Finished!');
+        }
+
+    },1000);
+}
+
+function pauseTimer(){
+    clearInterval(timerInterval);
+    timerInterval = null;
+}
+
+function resetTimer(){
+    pauseTimer();
+
+    const mins =
+        parseInt(document.getElementById('timerMinutes').value) || 1;
+
+    timerSeconds = mins * 60;
+
+    updateTimerDisplay();
+
+    stopSound();
+}
+
+document.getElementById('timerMinutes').addEventListener('input', ()=>{
+    if(!timerInterval){
+        const mins =
+            parseInt(document.getElementById('timerMinutes').value) || 0;
+
+        timerSeconds = mins * 60;
+        updateTimerDisplay();
+    }
+});
+
+/* ---------- Sound ---------- */
+
+const sound = document.getElementById('alarmSound');
+
+function playSound(){
+    sound.currentTime = 0;
+    sound.loop = true;
+
+    sound.play().catch(()=>{});
+}
+
+function stopSound(){
+    sound.pause();
+    sound.currentTime = 0;
+}
+
+/* ---------- Initial ---------- */
+
+updateStopwatchDisplay();
+updateTimerDisplay();
+</script>
+
+</body>
+</html>
