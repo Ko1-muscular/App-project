@@ -30,14 +30,14 @@ header{
 }
 
 header img{
-    width:80px;
-    height:80px;
+    width:100px;
+    height:100px;
     object-fit:contain;
 }
 
 h1{
     margin-top:10px;
-    font-size:2.2rem;
+    font-size:2.8rem;
 }
 
 main{
@@ -51,7 +51,7 @@ main{
 .mode{
     display:none;
     width:100%;
-    max-width:700px;
+    max-width:800px;
     text-align:center;
 }
 
@@ -60,27 +60,36 @@ main{
 }
 
 .big-time{
-    font-size:5rem;
+    font-size:6rem;
     font-weight:bold;
-    margin:20px 0;
-    word-break:break-word;
+    margin:30px 0;
+}
+
+.label{
+    font-size:2rem;
+    margin-bottom:20px;
 }
 
 input[type="number"],
 input[type="time"]{
-    font-size:1.5rem;
-    padding:12px;
-    margin:8px;
-    border:2px solid #cccccc;
-    border-radius:10px;
+    font-size:2rem;
+    padding:15px;
+    margin:10px;
+    border:3px solid #cccccc;
+    border-radius:12px;
+    text-align:center;
+}
+
+.big-input{
+    width:140px;
 }
 
 button{
-    font-size:1.2rem;
-    padding:12px 20px;
-    margin:6px;
+    font-size:1.5rem;
+    padding:18px 32px;
+    margin:10px;
     border:none;
-    border-radius:12px;
+    border-radius:16px;
     cursor:pointer;
     background:#4caf50;
     color:white;
@@ -97,29 +106,33 @@ button:hover{
 
 .nav-btn{
     flex:1;
-    border-radius:0;
     margin:0;
-    padding:18px;
+    border-radius:0;
+    font-size:1.5rem;
+    padding:25px;
     background:#2e7d32;
-    font-size:1.1rem;
 }
 
 .nav-btn.active{
     background:#1b5e20;
 }
 
-.label{
-    font-size:1.4rem;
-    margin-bottom:10px;
+.status{
+    margin-top:25px;
+    font-size:1.5rem;
 }
 
 @media (max-width:700px){
+
     .big-time{
-        font-size:3rem;
+        font-size:3.5rem;
     }
 
-    input[type="number"],
-    input[type="time"]{
+    .big-input{
+        width:110px;
+    }
+
+    button{
         width:90%;
     }
 }
@@ -136,6 +149,7 @@ button:hover{
 
     <!-- Alarm -->
     <section id="alarmMode" class="mode active">
+
         <div class="label">Alarm</div>
 
         <input type="time" id="alarmTime">
@@ -145,13 +159,15 @@ button:hover{
             <button onclick="clearAlarm()">Clear Alarm</button>
         </div>
 
-        <div id="alarmStatus" style="margin-top:20px;font-size:1.3rem;">
+        <div id="alarmStatus" class="status">
             No alarm set
         </div>
+
     </section>
 
     <!-- Stopwatch -->
     <section id="stopwatchMode" class="mode">
+
         <div class="label">Stopwatch</div>
 
         <div class="big-time" id="stopwatchDisplay">
@@ -163,14 +179,33 @@ button:hover{
             <button onclick="pauseStopwatch()">Pause</button>
             <button onclick="resetStopwatch()">Reset</button>
         </div>
+
     </section>
 
     <!-- Timer -->
     <section id="timerMode" class="mode">
+
         <div class="label">Timer</div>
 
         <div>
-            <input type="number" id="timerMinutes" min="0" value="1" placeholder="Minutes">
+            <input
+                type="number"
+                id="timerMinutes"
+                class="big-input"
+                min="0"
+                value="1"
+                placeholder="Min"
+            >
+
+            <input
+                type="number"
+                id="timerSecondsInput"
+                class="big-input"
+                min="0"
+                max="59"
+                value="0"
+                placeholder="Sec"
+            >
         </div>
 
         <div class="big-time" id="timerDisplay">
@@ -182,6 +217,7 @@ button:hover{
             <button onclick="pauseTimer()">Pause</button>
             <button onclick="resetTimer()">Reset</button>
         </div>
+
     </section>
 
 </main>
@@ -195,28 +231,45 @@ button:hover{
 <audio id="alarmSound" src="NatureAlarm.mp3" preload="auto"></audio>
 
 <script>
-/* ---------- Mode Switch ---------- */
+/* ---------------- MODE ---------------- */
 
 function showMode(id, btn){
-    document.querySelectorAll('.mode').forEach(m=>{
-        m.classList.remove('active');
+
+    document.querySelectorAll('.mode').forEach(mode=>{
+        mode.classList.remove('active');
     });
 
     document.getElementById(id).classList.add('active');
 
-    document.querySelectorAll('.nav-btn').forEach(b=>{
-        b.classList.remove('active');
+    document.querySelectorAll('.nav-btn').forEach(button=>{
+        button.classList.remove('active');
     });
 
     btn.classList.add('active');
 }
 
-/* ---------- Alarm ---------- */
+/* ---------------- SOUND ---------------- */
+
+const sound = document.getElementById('alarmSound');
+
+function playSound(){
+    sound.loop = true;
+    sound.currentTime = 0;
+    sound.play().catch(()=>{});
+}
+
+function stopSound(){
+    sound.pause();
+    sound.currentTime = 0;
+}
+
+/* ---------------- ALARM ---------------- */
 
 let alarmTimeValue = null;
 let alarmTriggered = false;
 
 function setAlarm(){
+
     const value = document.getElementById('alarmTime').value;
 
     if(!value){
@@ -232,6 +285,7 @@ function setAlarm(){
 }
 
 function clearAlarm(){
+
     alarmTimeValue = null;
     alarmTriggered = false;
 
@@ -242,31 +296,39 @@ function clearAlarm(){
 }
 
 setInterval(()=>{
-    if(!alarmTimeValue || alarmTriggered) return;
+
+    if(!alarmTimeValue || alarmTriggered){
+        return;
+    }
 
     const now = new Date();
 
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
 
-    const current = hh + ':' + mm;
+    const currentTime = h + ':' + m;
 
-    if(current === alarmTimeValue){
+    if(currentTime === alarmTimeValue){
+
         alarmTriggered = true;
+
         playSound();
+
         alert('Alarm Time!');
     }
+
 },1000);
 
-/* ---------- Stopwatch ---------- */
+/* ---------------- STOPWATCH ---------------- */
 
 let stopwatchTime = 0;
 let stopwatchInterval = null;
 
 function updateStopwatchDisplay(){
-    let hours = Math.floor(stopwatchTime / 3600);
-    let minutes = Math.floor((stopwatchTime % 3600) / 60);
-    let seconds = stopwatchTime % 60;
+
+    const hours = Math.floor(stopwatchTime / 3600);
+    const minutes = Math.floor((stopwatchTime % 3600) / 60);
+    const seconds = stopwatchTime % 60;
 
     document.getElementById('stopwatchDisplay').textContent =
         String(hours).padStart(2,'0') + ':' +
@@ -275,31 +337,52 @@ function updateStopwatchDisplay(){
 }
 
 function startStopwatch(){
-    if(stopwatchInterval) return;
+
+    if(stopwatchInterval){
+        return;
+    }
 
     stopwatchInterval = setInterval(()=>{
+
         stopwatchTime++;
         updateStopwatchDisplay();
+
     },1000);
 }
 
 function pauseStopwatch(){
+
     clearInterval(stopwatchInterval);
     stopwatchInterval = null;
 }
 
 function resetStopwatch(){
+
     pauseStopwatch();
+
     stopwatchTime = 0;
+
     updateStopwatchDisplay();
 }
 
-/* ---------- Timer ---------- */
+/* ---------------- TIMER ---------------- */
 
 let timerSeconds = 60;
 let timerInterval = null;
 
+function getInputSeconds(){
+
+    const mins =
+        parseInt(document.getElementById('timerMinutes').value) || 0;
+
+    const secs =
+        parseInt(document.getElementById('timerSecondsInput').value) || 0;
+
+    return (mins * 60) + secs;
+}
+
 function updateTimerDisplay(){
+
     const mins = Math.floor(timerSeconds / 60);
     const secs = timerSeconds % 60;
 
@@ -310,14 +393,18 @@ function updateTimerDisplay(){
 
 function startTimer(){
 
-    if(timerInterval) return;
+    if(timerInterval){
+        return;
+    }
 
     if(timerSeconds <= 0){
-        const minsInput =
-            parseInt(document.getElementById('timerMinutes').value) || 1;
 
-        timerSeconds = minsInput * 60;
-        updateTimerDisplay();
+        timerSeconds = getInputSeconds();
+
+        if(timerSeconds <= 0){
+            alert('Please enter a time.');
+            return;
+        }
     }
 
     timerInterval = setInterval(()=>{
@@ -327,12 +414,16 @@ function startTimer(){
         updateTimerDisplay();
 
         if(timerSeconds <= 0){
+
             clearInterval(timerInterval);
             timerInterval = null;
+
             timerSeconds = 0;
+
             updateTimerDisplay();
 
             playSound();
+
             alert('Timer Finished!');
         }
 
@@ -340,53 +431,47 @@ function startTimer(){
 }
 
 function pauseTimer(){
+
     clearInterval(timerInterval);
     timerInterval = null;
 }
 
 function resetTimer(){
+
     pauseTimer();
 
-    const mins =
-        parseInt(document.getElementById('timerMinutes').value) || 1;
-
-    timerSeconds = mins * 60;
+    timerSeconds = getInputSeconds();
 
     updateTimerDisplay();
 
     stopSound();
 }
 
-document.getElementById('timerMinutes').addEventListener('input', ()=>{
-    if(!timerInterval){
-        const mins =
-            parseInt(document.getElementById('timerMinutes').value) || 0;
+document.getElementById('timerMinutes')
+.addEventListener('input', ()=>{
 
-        timerSeconds = mins * 60;
+    if(!timerInterval){
+        timerSeconds = getInputSeconds();
         updateTimerDisplay();
     }
 });
 
-/* ---------- Sound ---------- */
+document.getElementById('timerSecondsInput')
+.addEventListener('input', ()=>{
 
-const sound = document.getElementById('alarmSound');
+    if(!timerInterval){
+        timerSeconds = getInputSeconds();
+        updateTimerDisplay();
+    }
+});
 
-function playSound(){
-    sound.currentTime = 0;
-    sound.loop = true;
+/* ---------------- START ---------------- */
 
-    sound.play().catch(()=>{});
-}
+timerSeconds = getInputSeconds();
 
-function stopSound(){
-    sound.pause();
-    sound.currentTime = 0;
-}
-
-/* ---------- Initial ---------- */
-
-updateStopwatchDisplay();
 updateTimerDisplay();
+updateStopwatchDisplay();
+
 </script>
 
 </body>
