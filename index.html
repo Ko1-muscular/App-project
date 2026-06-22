@@ -31,9 +31,9 @@ body{
 header{
     text-align:center;
     padding:25px;
-    background:rgba(255,255,255,0.88);
+    background:rgba(255,255,255,0.20);
     backdrop-filter:blur(4px);
-    border-bottom:2px solid rgba(255,255,255,0.5);
+    border-bottom:2px solid rgba(255,255,255,0.3);
 }
 
 header img{
@@ -47,6 +47,7 @@ h1{
     font-size:4rem;
     font-weight:bold;
     color:#1b5e20;
+    text-shadow:0 2px 8px rgba(255,255,255,0.8);
 }
 
 main{
@@ -62,7 +63,7 @@ main{
     width:100%;
     max-width:900px;
     text-align:center;
-    background:rgba(255,255,255,0.88);
+    background:rgba(255,255,255,0.20);
     padding:40px;
     border-radius:25px;
     backdrop-filter:blur(4px);
@@ -76,12 +77,15 @@ main{
     font-size:2.2rem;
     font-weight:bold;
     margin-bottom:25px;
+    color:#1b5e20;
 }
 
 .big-time{
     font-size:6.5rem;
     font-weight:bold;
     margin:30px 0;
+    color:#1b5e20;
+    text-shadow:0 2px 8px rgba(255,255,255,0.8);
 }
 
 input[type="number"],
@@ -92,6 +96,7 @@ input[type="time"]{
     border:3px solid #cccccc;
     border-radius:15px;
     text-align:center;
+    background:rgba(255,255,255,0.85);
 }
 
 .big-input{
@@ -108,21 +113,26 @@ button{
     background:#43a047;
     color:white;
     font-weight:bold;
+    transition:0.2s;
 }
 
 button:hover{
     opacity:0.9;
+    transform:scale(1.03);
 }
 
 .status{
     margin-top:25px;
     font-size:1.5rem;
+    color:#1b5e20;
+    font-weight:bold;
 }
 
 .bottom-nav{
     display:flex;
-    background:rgba(255,255,255,0.95);
-    border-top:2px solid #dddddd;
+    background:rgba(255,255,255,0.20);
+    backdrop-filter:blur(4px);
+    border-top:2px solid rgba(255,255,255,0.3);
 }
 
 .nav-btn{
